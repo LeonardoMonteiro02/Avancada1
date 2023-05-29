@@ -236,12 +236,21 @@ public class CreateAccountActivity extends AppCompatActivity {
             return;
         }
 
-        // Salvar os dados no banco de dados
+        /// Salvar os dados no banco de dados
         long rowId = databaseHelper.insertAccount(fullName, birthDate, phone, email, password);
 
-        if (rowId != -1) {
+        if (rowId > 0) {
             // Os dados foram salvos com sucesso
             Toast.makeText(this, "Conta criada com sucesso. ID da linha: " + rowId, Toast.LENGTH_SHORT).show();
+        } else if (rowId == -3) {
+            // E-mail já cadastrado
+            Toast.makeText(this, "O e-mail já está em uso", Toast.LENGTH_SHORT).show();
+        } else if (rowId == -4) {
+            // Telefone já cadastrado
+            Toast.makeText(this, "O telefone já está em uso", Toast.LENGTH_SHORT).show();
+        } else if (rowId == -2) {
+            // E-mail e telefone já cadastrados
+            Toast.makeText(this, "O e-mail e o telefone já estão em uso", Toast.LENGTH_SHORT).show();
         } else {
             // Ocorreu um erro ao salvar os dados
             Toast.makeText(this, "Erro ao salvar a conta", Toast.LENGTH_SHORT).show();

@@ -43,6 +43,37 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public long insertAccount(String fullName, String birthDate, String phone, String email, String password) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        // Verificar se já existe um registro com o mesmo e-mail e telefone
+        Cursor emailPhoneCursor = db.query(TABLE_ACCOUNT, new String[]{COL_EMAIL, COL_PHONE},
+                COL_EMAIL + " = ? AND " + COL_PHONE + " = ?", new String[]{email, phone}, null, null, null);
+        if (emailPhoneCursor.getCount() > 0) {
+            emailPhoneCursor.close();
+            db.close();
+            return -2; // Retornar um valor indicando que o e-mail e telefone já estão em uso
+        }
+        emailPhoneCursor.close();
+
+        // Verificar se já existe um registro com o mesmo e-mail
+        Cursor emailCursor = db.query(TABLE_ACCOUNT, new String[]{COL_EMAIL}, COL_EMAIL + " = ?", new String[]{email}, null, null, null);
+        if (emailCursor.getCount() > 0) {
+            emailCursor.close();
+            db.close();
+            return -3; // Retornar um valor indicando que o e-mail já está em uso
+        }
+        emailCursor.close();
+
+        // Verificar se já existe um registro com o mesmo telefone
+        Cursor phoneCursor = db.query(TABLE_ACCOUNT, new String[]{COL_PHONE}, COL_PHONE + " = ?", new String[]{phone}, null, null, null);
+        if (phoneCursor.getCount() > 0) {
+            phoneCursor.close();
+            db.close();
+            return -4; // Retornar um valor indicando que o telefone já está em uso
+        }
+        phoneCursor.close();
+
+
+
         ContentValues values = new ContentValues();
         values.put(COL_FULL_NAME, fullName);
         values.put(COL_BIRTH_DATE, birthDate);
@@ -53,4 +84,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return rowId;
     }
+
 }
