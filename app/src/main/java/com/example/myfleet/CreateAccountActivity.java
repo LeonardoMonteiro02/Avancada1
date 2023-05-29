@@ -183,10 +183,6 @@ public class CreateAccountActivity extends AppCompatActivity {
             fullNameEditText.setError("Nome inválido");
             isValid = false;
         }
-        if (fullName.isEmpty()) {
-            fullNameEditText.setError("Campo obrigatório");
-            isValid = false;
-        }
 
         if (birthDate.isEmpty()) {
             birthDateEditText.setError("Campo obrigatório");
@@ -219,7 +215,6 @@ public class CreateAccountActivity extends AppCompatActivity {
             passwordEditText.setError("Senha fraca utilize caracteres e numeros");
             isValid = false;
         }
-
 
         if (confirmPassword.isEmpty()) {
             confirmPasswordEditText.setError("Campo obrigatório");
@@ -283,6 +278,7 @@ public class CreateAccountActivity extends AppCompatActivity {
             return false;
         }
     }
+
     private boolean isValidFullName(String fullName) {
         if (fullName.isEmpty()) {
             return false;
@@ -325,6 +321,4 @@ public class CreateAccountActivity extends AppCompatActivity {
 
         return hasUpperCase && hasLowerCase && hasDigit;
     }
-
-
 }

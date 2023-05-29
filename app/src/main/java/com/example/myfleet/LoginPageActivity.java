@@ -45,7 +45,7 @@ public class LoginPageActivity extends AppCompatActivity implements View.OnClick
 
         loginEmailButton = findViewById(R.id.buttonLoginEmail);
         loginFacebookButton = findViewById(R.id.buttonFacebook);
-        loginButton = findViewById(R.id.buttonLogin);
+        loginButton = findViewById(R.id.buttonLoginLoginPage);
         createAccountTextView = findViewById(R.id.textViewCreateAccount);
 
         Typeface customFont = Typeface.createFromAsset(getAssets(), "fonts/LTC Kennerley W00 Small Caps.ttf");
@@ -58,7 +58,7 @@ public class LoginPageActivity extends AppCompatActivity implements View.OnClick
         // Configurar o CallbackManager para autenticação pelo Facebook
         callbackManager = CallbackManager.Factory.create();
 
-// Criar o cliente da API do Google
+        // Criar o cliente da API do Google
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
@@ -86,7 +86,7 @@ public class LoginPageActivity extends AppCompatActivity implements View.OnClick
             // Solicitar permissões adicionais, se necessário
             LoginManager.getInstance().logInWithReadPermissions(LoginPageActivity.this, Arrays.asList("email"));
 
-// Registrar o callback para tratar o resultado da autenticação
+            // Registrar o callback para tratar o resultado da autenticação
             LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
                 public void onSuccess(LoginResult loginResult) {
@@ -110,14 +110,15 @@ public class LoginPageActivity extends AppCompatActivity implements View.OnClick
                     // Ocorreu um erro durante a autenticação pelo Facebook
                 }
             });
-        } else if (v.getId() == R.id.buttonLogin) {
-            Toast.makeText(this, "Login Criado pressionado", Toast.LENGTH_SHORT).show();
-            // Adicione aqui a lógica para a ação do botão "Login Criado"
+        } else if (v.getId() == R.id.buttonLoginLoginPage) {
+            Intent intent = new Intent(LoginPageActivity.this, ActivityLogin.class);
+            startActivity(intent);
         } else if (v.getId() == R.id.textViewCreateAccount) {
             Toast.makeText(this, "Problemas com login? pressionado", Toast.LENGTH_SHORT).show();
             // Adicione aqui a lógica para a ação do texto "Problemas com login?"
         }
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -149,7 +150,6 @@ public class LoginPageActivity extends AppCompatActivity implements View.OnClick
             Toast.makeText(this, "Falha no login pelo Gmail", Toast.LENGTH_SHORT).show();
         }
     }
-
     private void handleSignInResult(GoogleSignInResult result) {
         if (result.isSuccess()) {
             // Login bem-sucedido, obter a conta do usuário
@@ -166,4 +166,5 @@ public class LoginPageActivity extends AppCompatActivity implements View.OnClick
             Toast.makeText(this, "Falha no login pelo Gmail", Toast.LENGTH_SHORT).show();
         }
     }
+
 }
