@@ -72,8 +72,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         phoneCursor.close();
 
-
-
         ContentValues values = new ContentValues();
         values.put(COL_FULL_NAME, fullName);
         values.put(COL_BIRTH_DATE, birthDate);
@@ -85,4 +83,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rowId;
     }
 
+    public boolean checkAccount(String email, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Consultar o banco de dados para verificar se existe uma conta com o e-mail e senha fornecidos
+        Cursor cursor = db.query(TABLE_ACCOUNT, new String[]{COL_EMAIL}, COL_EMAIL + " = ? AND " + COL_PASSWORD + " = ?",
+                new String[]{email, password}, null, null, null);
+
+        boolean accountExists = cursor.getCount() > 0;
+
+        cursor.close();
+        db.close();
+
+        return accountExists;
+    }
 }

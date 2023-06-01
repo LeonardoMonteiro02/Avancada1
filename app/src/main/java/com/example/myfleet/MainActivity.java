@@ -1,6 +1,5 @@
 package com.example.myfleet;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -11,7 +10,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,12 +21,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button createButton;
     private Button loginButton;
     private TextView textBemvindo;
+    private SessionManager sessionManager;
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sessionManager = new SessionManager(getApplicationContext());
+
+        // Verifica se o usuário já está logado
+        if (sessionManager.isLoggedIn()) {
+            // Redireciona para a próxima atividade após o login
+            Intent intent = new Intent(MainActivity.this, ActivityHome.class);
+            startActivity(intent);
+            finish(); // Fecha a atividade atual
+        }
 
         carImage = findViewById(R.id.car);
         logoImage = findViewById(R.id.logo);
@@ -96,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 loginButton.setVisibility(View.VISIBLE);
                 createButton.setVisibility(View.VISIBLE);
                 textBemvindo.setVisibility(View.VISIBLE);
-
             }
 
             @Override

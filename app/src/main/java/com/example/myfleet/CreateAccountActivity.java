@@ -66,7 +66,7 @@ public class CreateAccountActivity extends AppCompatActivity {
 
                     int cl = clean.length();
                     int sel = cl;
-                    for (int i = 2; i <= cl && i < 6; i += 2) {
+                    for (int i = 2; i <= cl && i < 8; i += 2) {
                         sel++;
                     }
                     // Fix for pressing delete next to a forward slash
@@ -81,15 +81,24 @@ public class CreateAccountActivity extends AppCompatActivity {
 
                         // Verificar e ajustar os valores de dia, mês e ano se necessário
                         if (month > 12) {
-                            month = 12;
+                            // month = 12;
+                            birthDateEditText.setError("Mês inválido");
                         }
                         Calendar calendar = Calendar.getInstance();
                         calendar.set(Calendar.MONTH, month - 1);
                         int maxDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                         if (day > maxDay) {
-                            day = maxDay;
+                            // day = maxDay;
+                            birthDateEditText.setError("Dia inválido");
                         }
                         calendar.set(Calendar.DAY_OF_MONTH, day);
+
+                        // Verificar e ajustar o valor do ano se necessário
+                        int currentYear = calendar.get(Calendar.YEAR);
+                        if (year > currentYear || year < 1900) {
+                            // year = currentYear;
+                            birthDateEditText.setError("Ano inválido");
+                        }
 
                         clean = String.format("%02d%02d%04d", day, month, year);
                     }
@@ -103,6 +112,7 @@ public class CreateAccountActivity extends AppCompatActivity {
                 }
             }
         });
+
 
         // Formatação do telefone ((XX) X.XXXX-XXXX)
         phoneEditText.addTextChangedListener(new TextWatcher() {
@@ -183,10 +193,6 @@ public class CreateAccountActivity extends AppCompatActivity {
             fullNameEditText.setError("Nome inválido");
             isValid = false;
         }
-        if (fullName.isEmpty()) {
-            fullNameEditText.setError("Campo obrigatório");
-            isValid = false;
-        }
 
         if (birthDate.isEmpty()) {
             birthDateEditText.setError("Campo obrigatório");
@@ -219,7 +225,6 @@ public class CreateAccountActivity extends AppCompatActivity {
             passwordEditText.setError("Senha fraca utilize caracteres e numeros");
             isValid = false;
         }
-
 
         if (confirmPassword.isEmpty()) {
             confirmPasswordEditText.setError("Campo obrigatório");
@@ -270,6 +275,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         return phoneNumber.matches(phonePattern);
     }
 
+    //Verifica se a data é valida
     private boolean isValidDate(String date) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         sdf.setLenient(false);
@@ -283,6 +289,7 @@ public class CreateAccountActivity extends AppCompatActivity {
             return false;
         }
     }
+
     private boolean isValidFullName(String fullName) {
         if (fullName.isEmpty()) {
             return false;
@@ -325,6 +332,4 @@ public class CreateAccountActivity extends AppCompatActivity {
 
         return hasUpperCase && hasLowerCase && hasDigit;
     }
-
-
 }

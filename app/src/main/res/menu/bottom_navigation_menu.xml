@@ -1,0 +1,29 @@
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Botão de menu -->
+    <item
+        android:id="@+id/nav_home"
+        android:title="Home"
+        android:titleCondensed=" "
+        android:icon="@drawable/home"
+        app:showAsAction="always" />
+
+    <!-- Espaçamento -->
+    <item
+        android:titleCondensed="   "
+        android:title=""
+        android:enabled="false"
+        app:showAsAction="always" />
+
+
+
+    <!-- Botão de exit -->
+    <item
+        android:id="@+id/nav_exit"
+        android:title="Exit"
+        android:titleCondensed=" "
+        android:icon="@drawable/exit"
+        app:showAsAction="always" />
+
+
+</menu>

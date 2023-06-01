@@ -41,7 +41,7 @@
         android:paddingRight="60dp"
         android:scaleType="fitCenter" />
     <Button
-        android:id="@+id/buttonLogin"
+        android:id="@+id/buttonLoginLoginPage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:backgroundTint="#1A10F1"
