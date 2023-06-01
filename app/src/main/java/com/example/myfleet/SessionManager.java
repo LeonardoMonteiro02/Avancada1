@@ -22,6 +22,11 @@ public class SessionManager {
         editor.apply();
     }
 
+    public void clearSession() {
+        editor.clear();
+        editor.apply();
+    }
+
     public boolean isLoggedIn() {
         return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false);
     }

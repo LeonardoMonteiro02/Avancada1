@@ -1,5 +1,6 @@
 package com.example.myfleet;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -51,8 +53,21 @@ public class ActivityHome extends AppCompatActivity {
                     Toast.makeText(ActivityHome.this, "Home", Toast.LENGTH_SHORT).show();
                     return true;
                 } else if (itemId == R.id.nav_exit) {
-                    // Ação para o item Dashboard
-                    Toast.makeText(ActivityHome.this, "Exit", Toast.LENGTH_SHORT).show();
+                    // Exibir o diálogo de confirmação
+                    new AlertDialog.Builder(ActivityHome.this)
+                            .setTitle("Confirmação")
+                            .setMessage("Tem certeza que deseja sair?")
+                            .setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Executar ação de logout e redirecionar para a tela de login
+                                    logout();
+                                    redirectToLogin();
+                                }
+                            })
+                            .setNegativeButton("Não", null)
+                            .show();
+
                     return true;
                 }
 
@@ -86,4 +101,20 @@ public class ActivityHome extends AppCompatActivity {
         mHandler.removeCallbacks(mRunnable);
         finishAffinity();
     }
+    // Método para realizar a ação de logout
+    private void logout() {
+        // Limpar as informações de sessão usando o SessionManager
+        SessionManager sessionManager = new SessionManager(ActivityHome.this);
+        sessionManager.clearSession();
+        // Outras ações de logout, se necessário
+    }
+
+    // Método para redirecionar para a tela Inicial
+    private void redirectToLogin() {
+        // Iniciar a atividade da tela de login ou navegar para a tela de login
+        Intent intent = new Intent(ActivityHome.this, MainActivity.class);
+        startActivity(intent);
+        finish(); // Opcionalmente, encerrar a atividade atual para que o usuário não possa voltar à tela de home pressionando o botão "Voltar"
+    }
+
 }
