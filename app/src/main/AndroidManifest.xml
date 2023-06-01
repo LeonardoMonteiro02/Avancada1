@@ -34,6 +34,11 @@
         <activity
             android:name=".ActivityLogin"
             android:exported="true" />
+        <activity
+            android:name=".ActivityHome"
+            android:launchMode="singleTask">
+            <!-- Resto dos atributos da activity -->
+        </activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
