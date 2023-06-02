@@ -26,4 +26,15 @@
 
     </com.google.android.material.bottomnavigation.BottomNavigationView>
 
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        app:itemTextAppearanceActive="@style/BottomNavigationTextStyle"
+        android:layout_marginTop="650dp"
+        app:layout_insetEdge="bottom"
+        app:menu="@menu/bottons_navigation">
+
+    </com.google.android.material.bottomnavigation.BottomNavigationView>
+
 </LinearLayout>

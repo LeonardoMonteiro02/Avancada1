@@ -1,0 +1,31 @@
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Botão de Grafico -->
+    <item
+        android:id="@+id/nav_dados"
+        android:title="Dados"
+        android:titleCondensed=" "
+        android:icon="@drawable/graph"
+        app:showAsAction="always" />
+
+
+
+    <!-- Botão de Calculadora -->
+    <item
+        android:id="@+id/nav_Calculadora"
+        android:title="Calculadora"
+        android:titleCondensed=" "
+        android:icon="@drawable/calculator"
+        app:showAsAction="always" />
+
+    <!-- Botão de mapa -->
+    <item
+        android:id="@+id/nav_map"
+        android:title="Mapa"
+        android:titleCondensed=" "
+        android:icon="@drawable/map"
+        app:showAsAction="always" />
+
+
+</menu>
