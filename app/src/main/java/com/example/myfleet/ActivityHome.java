@@ -1,23 +1,20 @@
 package com.example.myfleet;
 
-import android.content.DialogInterface;
+
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.MenuItem;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.myfleet.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ActivityHome extends AppCompatActivity {
-    private BottomNavigationView bottomNavigationView;
-    private BottomNavigationConfig bottomNavigationConfig;
 
+    private BottomNavigationView bottomNavigationView;
+    private BottomNavigationView bottomNavigationView2;
+    private SharedPreferences sharedPreferences;
+    private boolean isLoggedIn;
     private boolean doubleBackToExitPressedOnce = false;
     private Handler mHandler;
 
@@ -26,10 +23,19 @@ public class ActivityHome extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_page);
 
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationConfig = new BottomNavigationConfig(this, bottomNavigationView);
-        bottomNavigationConfig.configureBottomNavigation();
+        sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false);
 
+        if (!isLoggedIn) {
+            Intent intent = new Intent(ActivityHome.this, ActivityLogin.class);
+            startActivity(intent);
+            finish();
+        }
+
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView2 = findViewById(R.id.bottom_navigation2);
+
+        BottomNavigationConfig.configureNavigation(this, bottomNavigationView, bottomNavigationView2);
     }
 
     @Override
@@ -57,7 +63,4 @@ public class ActivityHome extends AppCompatActivity {
         mHandler.removeCallbacks(mRunnable);
         finishAffinity();
     }
-
-    // Restante do código da ActivityHome...
-
 }

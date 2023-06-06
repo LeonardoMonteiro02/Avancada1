@@ -40,6 +40,10 @@
             <!-- Resto dos atributos da activity -->
         </activity>
 
+        <activity
+            android:name=".CalculatorActivity"
+            android:exported="true" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="749769200950-jmsftkfbk9m08k5rnst4og3lunupidp3.apps.googleusercontent.com" />
