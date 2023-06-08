@@ -4,6 +4,9 @@
 
     <!-- Permissões do aplicativo -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
 
     <application
         android:allowBackup="true"
@@ -42,6 +45,12 @@
 
         <activity
             android:name=".CalculatorActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ActivityData"
+            android:exported="true" />
+        <activity
+            android:name=".ActivityMap"
             android:exported="true" />
 
         <meta-data

@@ -45,14 +45,16 @@ public class BottomNavigationConfig {
                     int itemId = item.getItemId();
 
                     if (itemId == R.id.nav_dados) {
-                        showToast(activity, "Dados");
+                        Intent intent = new Intent(activity, ActivityData.class);
+                        activity.startActivity(intent);
                         return true;
                     } else if (itemId == R.id.nav_Calculadora) {
                         Intent intent = new Intent(activity, CalculatorActivity.class);
                         activity.startActivity(intent);
                         return true;
                     } else if (itemId == R.id.nav_map) {
-                        showToast(activity, "Mapa");
+                        Intent intent = new Intent(activity, ActivityMap.class);
+                        activity.startActivity(intent);
                         return true;
                     }
 
