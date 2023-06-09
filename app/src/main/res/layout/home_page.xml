@@ -1,6 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- Conteúdo da página inicial -->
@@ -57,11 +58,12 @@
                 android:layout_marginTop="15dp"
                 android:hint="Ponto de Partida">
 
+                <AutoCompleteTextView
+                    android:id="@+id/starting_point"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:paddingLeft="8dp"/>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/starting_point"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -73,11 +75,12 @@
                 android:layout_marginTop="20dp"
                 android:hint="Ponto de Chegada">
 
-
-                <com.google.android.material.textfield.TextInputEditText
+                <AutoCompleteTextView
                     android:id="@+id/arrival_point"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="40dp"
+                    android:paddingLeft="8dp"/>
+
             </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -236,14 +239,14 @@
                                 android:background="@android:color/transparent" />
                         </LinearLayout>
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Caminhão"
-                                android:layout_marginTop="40dp"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:layout_gravity="center_horizontal" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Caminhão"
+                            android:layout_marginTop="40dp"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:layout_gravity="center_horizontal" />
                     </LinearLayout>
                 </LinearLayout>
             </HorizontalScrollView>
