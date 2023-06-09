@@ -6,21 +6,39 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.InputFilter;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Filter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.textfield.TextInputEditText;
 
-public class ActivityHome extends AppCompatActivity {
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+public class ActivityHome extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private BottomNavigationView bottomNavigationView2;
     private SharedPreferences sharedPreferences;
@@ -77,12 +95,71 @@ public class ActivityHome extends AppCompatActivity {
 
         BottomNavigationConfig.configureNavigation(this, bottomNavigationView, bottomNavigationView2);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, suggestionsArray);
+        // Inicialize a biblioteca de lugares
+        Places.initialize(getApplicationContext(), "AIzaSyCQgQeznfQnTbNtdHVNF2zvrokBc0rGLRI");
+
+        // Crie um cliente do Google Places
+        PlacesClient placesClient = Places.createClient(this);
+
+        // Crie um token de sessão para as solicitações de Autocomplete
+        AutocompleteSessionToken sessionToken = AutocompleteSessionToken.newInstance();
+
+        // Crie um adaptador de sugestões de locais
+        ArrayAdapter<AutocompletePrediction> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line);
         startingPointAutoComplete.setAdapter(adapter);
         arrivalPointAutoComplete.setAdapter(adapter);
 
         startingPointAutoComplete.setThreshold(1);
         arrivalPointAutoComplete.setThreshold(1);
+
+        startingPointAutoComplete.setOnItemClickListener((parent, view, position, id) -> {
+            AutocompletePrediction prediction = adapter.getItem(position);
+            if (prediction != null) {
+                String placeId = prediction.getPlaceId();
+                // Realize a lógica para obter os detalhes do local com base no ID do lugar
+                // ...
+            }
+        });
+
+        arrivalPointAutoComplete.setOnItemClickListener((parent, view, position, id) -> {
+            AutocompletePrediction prediction = adapter.getItem(position);
+            if (prediction != null) {
+                String placeId = prediction.getPlaceId();
+                // Realize a lógica para obter os detalhes do local com base no ID do lugar
+                // ...
+            }
+        });
+
+        startingPointAutoComplete.setValidator(new AutoCompleteTextView.Validator() {
+            @Override
+            public boolean isValid(CharSequence text) {
+                return text != null && !text.toString().isEmpty();
+            }
+
+            @Override
+            public CharSequence fixText(CharSequence invalidText) {
+                return "";
+            }
+        });
+
+        arrivalPointAutoComplete.setValidator(new AutoCompleteTextView.Validator() {
+            @Override
+            public boolean isValid(CharSequence text) {
+                return text != null && !text.toString().isEmpty();
+            }
+
+            @Override
+            public CharSequence fixText(CharSequence invalidText) {
+                return "";
+            }
+        });
+
+        startingPointAutoComplete.setFilters(new InputFilter[]{new InputFilter.LengthFilter(50)});
+        arrivalPointAutoComplete.setFilters(new InputFilter[]{new InputFilter.LengthFilter(50)});
+
+        // Defina um adaptador de filtro personalizado para o AutoCompleteTextView
+        startingPointAutoComplete.setAdapter(new PlacesAutoCompleteAdapter(placesClient, sessionToken));
+        arrivalPointAutoComplete.setAdapter(new PlacesAutoCompleteAdapter(placesClient, sessionToken));
 
         calculateRouteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,5 +231,83 @@ public class ActivityHome extends AppCompatActivity {
                 doubleBackToExitPressedOnce = false;
             }
         }, 2000);
+    }
+
+    private class PlacesAutoCompleteAdapter extends ArrayAdapter<AutocompletePrediction> {
+
+        private PlacesClient placesClient;
+        private AutocompleteSessionToken sessionToken;
+
+        public PlacesAutoCompleteAdapter(PlacesClient placesClient, AutocompleteSessionToken sessionToken) {
+            super(ActivityHome.this, android.R.layout.simple_dropdown_item_1line);
+            this.placesClient = placesClient;
+            this.sessionToken = sessionToken;
+        }
+
+        @Override
+        public Filter getFilter() {
+            Filter filter = new Filter() {
+                @Override
+                protected FilterResults performFiltering(CharSequence constraint) {
+                    FilterResults results = new FilterResults();
+                    List<String> predictions = new ArrayList<>(); // Lista de Strings para armazenar as previsões formatadas
+
+                    // Execute a solicitação de previsões de autocompletar para o texto de entrada
+                    FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+                            .setSessionToken(sessionToken)
+                            .setQuery(constraint.toString())
+                            .build();
+
+                    try {
+                        // Aguarde a conclusão da solicitação de previsões de autocompletar
+                        Task<FindAutocompletePredictionsResponse> task = placesClient.findAutocompletePredictions(request);
+                        Tasks.await(task, 10, TimeUnit.SECONDS);
+
+                        if (task.isSuccessful()) {
+                            FindAutocompletePredictionsResponse response = task.getResult();
+                            if (response != null) {
+                                for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
+                                    // Formatando o nome da rua, cidade e estado
+                                    String formattedAddress = prediction.getPrimaryText(null).toString();
+                                    String secondaryText = prediction.getSecondaryText(null).toString();
+                                    String formattedPrediction = formattedAddress + ", " + secondaryText;
+                                    predictions.add(formattedPrediction); // Adiciona a previsão formatada à lista
+                                }
+                            }
+                        } else {
+                            Exception exception = task.getException();
+                            if (exception != null) {
+                                exception.printStackTrace();
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    results.values = predictions;
+                    results.count = predictions.size();
+                    return results;
+                }
+
+
+                @Override
+                protected void publishResults(CharSequence constraint, FilterResults results) {
+                    clear();
+                    if (results != null && results.count > 0) {
+                        addAll((List<AutocompletePrediction>) results.values);
+                    }
+                    notifyDataSetChanged();
+                }
+
+                @Override
+                public CharSequence convertResultToString(Object resultValue) {
+                    if (resultValue instanceof AutocompletePrediction) {
+                        return ((AutocompletePrediction) resultValue).getFullText(null);
+                    }
+                    return super.convertResultToString(resultValue);
+                }
+            };
+            return filter;
+        }
     }
 }
