@@ -57,6 +57,11 @@
             android:name=".ActivityData"
             android:exported="true" />
 
+        <activity
+            android:name=".ActivityMap"
+            android:exported="true" />
+
+
         <!-- API Key do Google Maps -->
 
         <meta-data

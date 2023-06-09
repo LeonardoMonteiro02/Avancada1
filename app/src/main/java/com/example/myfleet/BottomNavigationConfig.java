@@ -49,7 +49,7 @@ public class BottomNavigationConfig {
                         activity.startActivity(intent);
                         return true;
                     } else if (itemId == R.id.nav_Calculadora) {
-                        Intent intent = new Intent(activity, CalculatorActivity.class);
+                        Intent intent = new Intent(activity, ActivityData.class);
                         activity.startActivity(intent);
                         return true;
                     } else if (itemId == R.id.nav_map) {
