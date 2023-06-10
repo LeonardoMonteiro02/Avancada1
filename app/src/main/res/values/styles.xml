@@ -3,4 +3,15 @@
     <style name="BottomNavigationTextStyle" parent="@android:style/TextAppearance">
         <item name="android:textStyle">bold</item>
     </style>
+
+    <style name="ButtonNumberStyle" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/button_number_background</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+    </style>
+
+    <style name="ButtonOperationStyle" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/button_operation_background</item>
+        <item name="android:textColor">@color/colorTextPrimary</item>
+    </style>
+
 </resources>

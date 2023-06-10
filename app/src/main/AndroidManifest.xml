@@ -2,8 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permissões do aplicativo -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Permissão para acessar a Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Permissão para acessar o serviço do Google Maps -->
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+
+    <!-- Permissão para acesso ao Google Maps -->
+    <uses-permission android:name="com.google.android.maps.permission.MAPS_RECEIVE" />
+
 
     <application
         android:allowBackup="true"
@@ -40,13 +50,23 @@
             <!-- Resto dos atributos da activity -->
         </activity>
 
+        <activity
+            android:name=".CalculatorActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ActivityData"
+            android:exported="true" />
+
+        <activity
+            android:name=".ActivityMap"
+            android:exported="true" />
+
+
+        <!-- API Key do Google Maps -->
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="749769200950-jmsftkfbk9m08k5rnst4og3lunupidp3.apps.googleusercontent.com" />
-        <meta-data
-            android:name="com.facebook.sdk.ApplicationId"
-            android:value="1297691631177277" />
-
+            android:value="AIzaSyCQgQeznfQnTbNtdHVNF2zvrokBc0rGLRI" />
     </application>
 
 </manifest>
