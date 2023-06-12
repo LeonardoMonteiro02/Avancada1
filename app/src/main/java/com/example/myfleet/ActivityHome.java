@@ -364,9 +364,12 @@ public class ActivityHome extends AppCompatActivity {
                     // Aplique o zoom e mova a câmera para exibir os marcadores
                     map.moveCamera(cu);
 
-                    // Obtenha a rota e desenhe no mapa
-                    getDirections(map, startLatLng, destinationLatLng, getApplicationContext());
-                    ;
+
+                    // Crie uma instância da classe RouteCalculator
+                    RouteCalculator routeCalculator = new RouteCalculator(map, startLatLng, destinationLatLng, getApplicationContext());
+
+                    // Chame o método calculateRoute()
+                    routeCalculator.calculateRoute();
                 }
             });
 
@@ -374,121 +377,6 @@ public class ActivityHome extends AppCompatActivity {
             Toast.makeText(ActivityHome.this, "Não foi possível obter as coordenadas", Toast.LENGTH_SHORT).show();
         }
     }
-    private void getDirections(GoogleMap map, LatLng startLatLng, LatLng destinationLatLng, Context context) {
-        Toast.makeText(context, "Calculando", Toast.LENGTH_LONG).show();
-
-        AsyncTask<Void, Integer, Boolean> task = new AsyncTask<Void, Integer, Boolean>() {
-            private static final String TOAST_ERR_MSG = "Impossível traçar Itinerário";
-
-            private final ArrayList<LatLng> lstLatLng = new ArrayList<>();
-
-            @Override
-            protected Boolean doInBackground(Void... params) {
-                try {
-                    String apiKey = "AIzaSyCQgQeznfQnTbNtdHVNF2zvrokBc0rGLRI";
-                    String url = "https://maps.googleapis.com/maps/api/directions/xml?origin=" +
-                            startLatLng.latitude + "," + startLatLng.longitude +
-                            "&destination=" + destinationLatLng.latitude + "," + destinationLatLng.longitude +
-                            "&sensor=false&language=pt" +
-                            "&mode=driving" +
-                            "&key=" + apiKey;
-
-                    InputStream stream = new URL(url).openStream();
-
-                    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-                    documentBuilderFactory.setIgnoringComments(true);
-
-                    DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-
-                    Document document = documentBuilder.parse(stream);
-                    document.getDocumentElement().normalize();
-
-                    String status = document.getElementsByTagName("status").item(0).getTextContent();
-                    if (!"OK".equals(status)) {
-                        return false;
-                    }
-
-                    Element elementLeg = (Element) document.getElementsByTagName("leg").item(0);
-                    NodeList nodeListStep = elementLeg.getElementsByTagName("step");
-                    int length = nodeListStep.getLength();
-
-                    for (int i = 0; i < length; i++) {
-                        Node nodeStep = nodeListStep.item(i);
-
-                        if (nodeStep.getNodeType() == Node.ELEMENT_NODE) {
-                            Element elementStep = (Element) nodeStep;
-                            decodePolylines(elementStep.getElementsByTagName("points").item(0).getTextContent());
-                        }
-                    }
-
-                    return true;
-                } catch (Exception e) {
-                    return false;
-                }
-            }
-
-            private void decodePolylines(String encodedPoints) {
-                int index = 0;
-                int lat = 0, lng = 0;
-
-                while (index < encodedPoints.length()) {
-                    int b, shift = 0, result = 0;
-
-                    do {
-                        b = encodedPoints.charAt(index++) - 63;
-                        result |= (b & 0x1f) << shift;
-                        shift += 5;
-                    } while (b >= 0x20);
-
-                    int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-                    lat += dlat;
-                    shift = 0;
-                    result = 0;
-
-                    do {
-                        b = encodedPoints.charAt(index++) - 63;
-                        result |= (b & 0x1f) << shift;
-                        shift += 5;
-                    } while (b >= 0x20);
-
-                    int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-                    lng += dlng;
-
-                    lstLatLng.add(new LatLng((double) lat / 1E5, (double) lng / 1E5));
-                }
-            }
-
-            @Override
-            protected void onPostExecute(Boolean result) {
-                if (!result) {
-                    Toast.makeText(context, TOAST_ERR_MSG, Toast.LENGTH_SHORT).show();
-                } else {
-                    PolylineOptions polylineOptions = new PolylineOptions();
-                    polylineOptions.color(Color.BLUE);
-
-                    for (LatLng latLng : lstLatLng) {
-                        polylineOptions.add(latLng);
-                    }
-
-                    MarkerOptions markerOptionsStart = new MarkerOptions();
-                    markerOptionsStart.position(startLatLng);
-                    markerOptionsStart.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-                    MarkerOptions markerOptionsDestination = new MarkerOptions();
-                    markerOptionsDestination.position(destinationLatLng);
-                    markerOptionsDestination.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(startLatLng, 10));
-                    map.addMarker(markerOptionsStart);
-                    map.addPolyline(polylineOptions);
-                    map.addMarker(markerOptionsDestination);
-                }
-            }
-        };
-
-        task.execute();
-    }
-
 }
 
 
