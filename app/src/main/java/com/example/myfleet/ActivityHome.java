@@ -69,9 +69,14 @@ import android.location.Geocoder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -81,6 +86,9 @@ import java.util.Locale;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 
 public class ActivityHome extends AppCompatActivity {
@@ -367,79 +375,120 @@ public class ActivityHome extends AppCompatActivity {
         }
     }
     private void getDirections(GoogleMap map, LatLng startLatLng, LatLng destinationLatLng, Context context) {
-        // Definir o URL para a API de Direções do Google
-        String apiKey = "AIzaSyCQgQeznfQnTbNtdHVNF2zvrokBc0rGLRI";
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" +
-                startLatLng.latitude + "," + startLatLng.longitude +
-                "&destination=" + destinationLatLng.latitude + "," + destinationLatLng.longitude +
-                "&key=" + apiKey;
+        Toast.makeText(context, "Calculando", Toast.LENGTH_LONG).show();
 
-        // Iniciar uma tarefa assíncrona para baixar os dados da rota
-        AsyncTask<String, Void, String> task = new AsyncTask<String, Void, String>() {
+        AsyncTask<Void, Integer, Boolean> task = new AsyncTask<Void, Integer, Boolean>() {
+            private static final String TOAST_ERR_MSG = "Impossível traçar Itinerário";
+
+            private final ArrayList<LatLng> lstLatLng = new ArrayList<>();
+
             @Override
-            protected String doInBackground(String... params) {
+            protected Boolean doInBackground(Void... params) {
                 try {
-                    // Fazer uma solicitação HTTP para obter os dados da rota
-                    URL url = new URL(params[0]);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setRequestMethod("GET");
+                    String apiKey = "AIzaSyCQgQeznfQnTbNtdHVNF2zvrokBc0rGLRI";
+                    String url = "https://maps.googleapis.com/maps/api/directions/xml?origin=" +
+                            startLatLng.latitude + "," + startLatLng.longitude +
+                            "&destination=" + destinationLatLng.latitude + "," + destinationLatLng.longitude +
+                            "&sensor=false&language=pt" +
+                            "&mode=driving" +
+                            "&key=" + apiKey;
 
-                    // Ler os dados da resposta
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        stringBuilder.append(line);
+                    InputStream stream = new URL(url).openStream();
+
+                    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+                    documentBuilderFactory.setIgnoringComments(true);
+
+                    DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+
+                    Document document = documentBuilder.parse(stream);
+                    document.getDocumentElement().normalize();
+
+                    String status = document.getElementsByTagName("status").item(0).getTextContent();
+                    if (!"OK".equals(status)) {
+                        return false;
                     }
-                    reader.close();
 
-                    // Retornar os dados da rota em formato JSON
-                    return stringBuilder.toString();
+                    Element elementLeg = (Element) document.getElementsByTagName("leg").item(0);
+                    NodeList nodeListStep = elementLeg.getElementsByTagName("step");
+                    int length = nodeListStep.getLength();
+
+                    for (int i = 0; i < length; i++) {
+                        Node nodeStep = nodeListStep.item(i);
+
+                        if (nodeStep.getNodeType() == Node.ELEMENT_NODE) {
+                            Element elementStep = (Element) nodeStep;
+                            decodePolylines(elementStep.getElementsByTagName("points").item(0).getTextContent());
+                        }
+                    }
+
+                    return true;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    return false;
                 }
-                return null;
+            }
+
+            private void decodePolylines(String encodedPoints) {
+                int index = 0;
+                int lat = 0, lng = 0;
+
+                while (index < encodedPoints.length()) {
+                    int b, shift = 0, result = 0;
+
+                    do {
+                        b = encodedPoints.charAt(index++) - 63;
+                        result |= (b & 0x1f) << shift;
+                        shift += 5;
+                    } while (b >= 0x20);
+
+                    int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+                    lat += dlat;
+                    shift = 0;
+                    result = 0;
+
+                    do {
+                        b = encodedPoints.charAt(index++) - 63;
+                        result |= (b & 0x1f) << shift;
+                        shift += 5;
+                    } while (b >= 0x20);
+
+                    int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+                    lng += dlng;
+
+                    lstLatLng.add(new LatLng((double) lat / 1E5, (double) lng / 1E5));
+                }
             }
 
             @Override
-            protected void onPostExecute(String result) {
-                if (result != null) {
-                    try {
-                        // Analisar os dados da rota e desenhar a polilinha no mapa
-                        List<LatLng> points = new ArrayList<>();
-                        JSONObject json = new JSONObject(result);
-                        JSONArray routes = json.getJSONArray("routes");
-                        if (routes.length() > 0) {
-                            JSONArray legs = routes.getJSONObject(0).getJSONArray("legs");
-                            JSONArray steps = legs.getJSONObject(0).getJSONArray("steps");
-                            for (int i = 0; i < steps.length(); i++) {
-                                JSONObject step = steps.getJSONObject(i);
-                                JSONObject startLocation = step.getJSONObject("start_location");
-                                double lat = startLocation.getDouble("lat");
-                                double lng = startLocation.getDouble("lng");
-                                LatLng point = new LatLng(lat, lng);
-                                points.add(point);
-                            }
-                        }
+            protected void onPostExecute(Boolean result) {
+                if (!result) {
+                    Toast.makeText(context, TOAST_ERR_MSG, Toast.LENGTH_SHORT).show();
+                } else {
+                    PolylineOptions polylineOptions = new PolylineOptions();
+                    polylineOptions.color(Color.BLUE);
 
-                        // Desenhar a polilinha no mapa
-                        PolylineOptions polylineOptions = new PolylineOptions()
-                                .addAll(points)
-                                .width(8)
-                                .color(Color.BLUE);
-                        map.addPolyline(polylineOptions);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    for (LatLng latLng : lstLatLng) {
+                        polylineOptions.add(latLng);
                     }
+
+                    MarkerOptions markerOptionsStart = new MarkerOptions();
+                    markerOptionsStart.position(startLatLng);
+                    markerOptionsStart.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+                    MarkerOptions markerOptionsDestination = new MarkerOptions();
+                    markerOptionsDestination.position(destinationLatLng);
+                    markerOptionsDestination.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(startLatLng, 10));
+                    map.addMarker(markerOptionsStart);
+                    map.addPolyline(polylineOptions);
+                    map.addMarker(markerOptionsDestination);
                 }
             }
         };
 
-        // Executar a tarefa assíncrona
-        task.execute(url);
+        task.execute();
     }
 
-
-
-
 }
+
+
