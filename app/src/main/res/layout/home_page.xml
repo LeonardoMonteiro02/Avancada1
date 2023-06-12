@@ -106,6 +106,7 @@
                     android:layout_marginHorizontal="17dp"
                     android:layout_height="300dp"
                     android:layout_marginTop="30dp"/>
+
             </LinearLayout>
 
             <TextView

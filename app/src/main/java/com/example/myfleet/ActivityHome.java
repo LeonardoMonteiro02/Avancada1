@@ -1,11 +1,21 @@
 package com.example.myfleet;
 
+import static com.facebook.internal.FacebookDialogFragment.TAG;
+
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputFilter;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -15,7 +25,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.libraries.places.api.Places;
@@ -23,15 +47,41 @@ import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 //import com.google.android.libraries.places.api.model.FindAutocompletePredictionsRequest;
 //import com.google.android.libraries.places.api.model.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.maps.DirectionsApi;
+import com.google.maps.DirectionsApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PendingResult;
+import com.google.maps.internal.PolylineEncoding;
+import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.DirectionsRoute;
+import com.google.maps.model.TravelMode;
+
+import android.location.Address;
+import android.location.Geocoder;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
+import java.util.Locale;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 
 public class ActivityHome extends AppCompatActivity {
 
@@ -53,6 +103,7 @@ public class ActivityHome extends AppCompatActivity {
     private Button startSimulationButton;
     private AutoCompleteTextView startingPointAutoComplete;
     private AutoCompleteTextView arrivalPointAutoComplete;
+    private GoogleMap map;
 
 
     @Override
@@ -109,12 +160,12 @@ public class ActivityHome extends AppCompatActivity {
             String startPoint = startingPointAutoComplete.getText().toString();
             String destination = arrivalPointAutoComplete.getText().toString();
 
-            String toastMessage = "Ponto de Partida: " + startPoint + "\n" +
+          /*  String toastMessage = "Ponto de Partida: " + startPoint + "\n" +
                     "Ponto de Chegada: " + destination;
-            Toast.makeText(ActivityHome.this, toastMessage, Toast.LENGTH_SHORT).show();
+            Toast.makeText(ActivityHome.this, toastMessage, Toast.LENGTH_SHORT).show();*/
 
-            // Realizar a lógica para calcular a rota com os pontos de partida e chegada
-            // ...
+            // Obter as coordenadas do ponto de partida e chegada
+            getCoordinates(startPoint, destination);
         });
 
         car1ImageButton.setOnClickListener(v -> {
@@ -241,4 +292,154 @@ public class ActivityHome extends AppCompatActivity {
             return filter;
         }
     }
+    private void getCoordinates(String startPoint, String destination) {
+        List<Address> startAddresses = null;
+        List<Address> destinationAddresses = null;
+        Geocoder geocoder = new Geocoder(ActivityHome.this, Locale.getDefault());
+
+        try {
+            startAddresses = geocoder.getFromLocationName(startPoint, 1);
+            destinationAddresses = geocoder.getFromLocationName(destination, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (startAddresses != null && startAddresses.size() > 0 && destinationAddresses != null && destinationAddresses.size() > 0) {
+            Address startAddress = startAddresses.get(0);
+            Address destinationAddress = destinationAddresses.get(0);
+
+            double startLatitude = startAddress.getLatitude();
+            double startLongitude = startAddress.getLongitude();
+
+            double destinationLatitude = destinationAddress.getLatitude();
+            double destinationLongitude = destinationAddress.getLongitude();
+
+            // Use as coordenadas obtidas para a lógica de cálculo da rota
+            LatLng startLatLng = new LatLng(startLatitude, startLongitude);
+            LatLng destinationLatLng = new LatLng(destinationLatitude, destinationLongitude);
+
+            // Inicialize o MapFragment
+            MapFragment mapFragment = MapFragment.newInstance();
+            getFragmentManager().beginTransaction()
+                    .add(R.id.mapFragment, mapFragment)
+                    .commit();
+
+            // Registrar o callback para ser notificado quando o mapa estiver pronto
+            mapFragment.getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(GoogleMap googleMap) {
+                    // A instância do GoogleMap foi obtida com sucesso
+                    map = googleMap;
+
+                    // Adicione o marcador para o ponto de partida
+                    map.addMarker(new MarkerOptions()
+                            .position(startLatLng)
+                            .title("Ponto de Partida")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+
+                    // Adicione o marcador para o ponto de chegada
+                    map.addMarker(new MarkerOptions()
+                            .position(destinationLatLng)
+                            .title("Ponto de Chegada")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+
+                    // Crie um objeto LatLngBounds para incluir os dois marcadores
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    builder.include(startLatLng);
+                    builder.include(destinationLatLng);
+                    LatLngBounds bounds = builder.build();
+
+                    // Calcule o tamanho da janela de visualização do mapa para incluir os dois marcadores
+                    int padding = 100; // Valor em pixels para adicionar espaço ao redor dos marcadores
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+
+                    // Aplique o zoom e mova a câmera para exibir os marcadores
+                    map.moveCamera(cu);
+
+                    // Obtenha a rota e desenhe no mapa
+                    getDirections(map, startLatLng, destinationLatLng, getApplicationContext());
+                    ;
+                }
+            });
+
+        } else {
+            Toast.makeText(ActivityHome.this, "Não foi possível obter as coordenadas", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private void getDirections(GoogleMap map, LatLng startLatLng, LatLng destinationLatLng, Context context) {
+        // Definir o URL para a API de Direções do Google
+        String apiKey = "AIzaSyCQgQeznfQnTbNtdHVNF2zvrokBc0rGLRI";
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" +
+                startLatLng.latitude + "," + startLatLng.longitude +
+                "&destination=" + destinationLatLng.latitude + "," + destinationLatLng.longitude +
+                "&key=" + apiKey;
+
+        // Iniciar uma tarefa assíncrona para baixar os dados da rota
+        AsyncTask<String, Void, String> task = new AsyncTask<String, Void, String>() {
+            @Override
+            protected String doInBackground(String... params) {
+                try {
+                    // Fazer uma solicitação HTTP para obter os dados da rota
+                    URL url = new URL(params[0]);
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+
+                    // Ler os dados da resposta
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        stringBuilder.append(line);
+                    }
+                    reader.close();
+
+                    // Retornar os dados da rota em formato JSON
+                    return stringBuilder.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                if (result != null) {
+                    try {
+                        // Analisar os dados da rota e desenhar a polilinha no mapa
+                        List<LatLng> points = new ArrayList<>();
+                        JSONObject json = new JSONObject(result);
+                        JSONArray routes = json.getJSONArray("routes");
+                        if (routes.length() > 0) {
+                            JSONArray legs = routes.getJSONObject(0).getJSONArray("legs");
+                            JSONArray steps = legs.getJSONObject(0).getJSONArray("steps");
+                            for (int i = 0; i < steps.length(); i++) {
+                                JSONObject step = steps.getJSONObject(i);
+                                JSONObject startLocation = step.getJSONObject("start_location");
+                                double lat = startLocation.getDouble("lat");
+                                double lng = startLocation.getDouble("lng");
+                                LatLng point = new LatLng(lat, lng);
+                                points.add(point);
+                            }
+                        }
+
+                        // Desenhar a polilinha no mapa
+                        PolylineOptions polylineOptions = new PolylineOptions()
+                                .addAll(points)
+                                .width(8)
+                                .color(Color.BLUE);
+                        map.addPolyline(polylineOptions);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+
+        // Executar a tarefa assíncrona
+        task.execute(url);
+    }
+
+
+
+
 }
