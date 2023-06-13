@@ -1,3 +1,24 @@
+/*********************************************************************
+
+ Nome do arquivo: MainActivity.java
+
+ Descrição: Este código implementa a atividade principal de um aplicativo Android.
+            Ele exibe uma animação de carro, seguida pela exibição do logo e botões.
+            Se o usuário já estiver logado, ele será redirecionado para a atividade Home.
+            Caso contrário, poderá criar uma conta ou fazer login.
+
+ Autor: Leonardo Monteiro sa Sé Pinto
+
+ Data: 13/06/2023
+
+ Histórico de modificações:
+
+ [Data da modificação]: [Breve descrição da modificação realizada]
+ [Data da modificação]: [Breve descrição da modificação realizada]
+ ...
+ **********************************************************************/
+
+
 package com.example.myfleet;
 
 import android.content.Intent;
@@ -10,18 +31,19 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    // Elementos visuais
     private ImageView carImage;
     private ImageView logoImage;
     private LinearLayout buttonLayout;
     private Button createButton;
     private Button loginButton;
     private TextView textBemvindo;
-    private SessionManager sessionManager;
+
+    private SessionManager sessionManager; // Gerenciador de sessão do usuário
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             finish(); // Fecha a atividade atual
         }
 
+        // Inicialização dos elementos visuais
         carImage = findViewById(R.id.car);
         logoImage = findViewById(R.id.logo);
         buttonLayout = findViewById(R.id.button_layout);
@@ -45,15 +68,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         loginButton = findViewById(R.id.login);
         textBemvindo = findViewById(R.id.textBemvindo);
 
+        // Definição da fonte personalizada para o texto de boas-vindas
         Typeface customFont = Typeface.createFromAsset(getAssets(), "fonts/LTC Kennerley W00 Small Caps.ttf");
         textBemvindo.setTypeface(customFont);
 
         createButton.setOnClickListener(this);
         loginButton.setOnClickListener(this);
 
-        animateCar();
+        animateCar(); // Inicia a animação do carro
     }
 
+    // Método responsável por animar a imagem do carro
     private void animateCar() {
         Animation animationCar = AnimationUtils.loadAnimation(this, R.anim.animacao);
         carImage.startAnimation(animationCar);
@@ -85,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    // Método responsável por animar a imagem do logo e exibir os botões
     private void animateLogo() {
         logoImage.setVisibility(View.VISIBLE);
 
@@ -120,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(MainActivity.this, CreateAccountActivity.class);
             startActivity(intent);
         } else if (v.getId() == R.id.login) {
-            // Adicione aqui a lógica para a ação do botão "Login"
+            // Botão "Login" pressionado
             Intent intent = new Intent(MainActivity.this, LoginPageActivity.class);
             startActivity(intent);
         }

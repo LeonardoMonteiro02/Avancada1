@@ -1,3 +1,24 @@
+/*********************************************************************
+
+ Nome do arquivo: CreateAccountActivity.java
+
+ Descrição: Este código representa a atividade de criação de uma conta de usuário.
+            Ele contém campos para inserir informações do usuário, como nome completo, data de nascimento,
+            telefone,e-mail, senha e confirmação de senha. Os campos são validados e os dados são salvos
+            em um banco de dados.
+
+ Autor: Leonardo Monteiro sa Sé Pinto
+
+ Data: 13/06/2023
+
+ Histórico de modificações:
+
+ [Data da modificação]: [Breve descrição da modificação realizada]
+ [Data da modificação]: [Breve descrição da modificação realizada]
+ ...
+ **********************************************************************/
+
+
 package com.example.myfleet;
 
 import android.os.Bundle;
@@ -37,6 +58,7 @@ public class CreateAccountActivity extends AppCompatActivity {
 
         databaseHelper = new DatabaseHelper(this);
 
+        // Referências aos campos de entrada de texto
         fullNameEditText = findViewById(R.id.full_name);
         birthDateEditText = findViewById(R.id.date_of_birth);
         phoneEditText = findViewById(R.id.phone);
@@ -45,7 +67,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         confirmPasswordEditText = findViewById(R.id.confirm_password);
         saveButton = findViewById(R.id.save_button);
 
-        // Formatação da data de nascimento (DD/MM/AAAA)
+        // Listener para a formatação da data de nascimento (DD/MM/AAAA)
         birthDateEditText.addTextChangedListener(new TextWatcher() {
             private String current = "";
             private String ddmmyyyy = "DDMMYYYY";
@@ -69,7 +91,7 @@ public class CreateAccountActivity extends AppCompatActivity {
                     for (int i = 2; i <= cl && i < 8; i += 2) {
                         sel++;
                     }
-                    // Fix for pressing delete next to a forward slash
+                    // Correção ao pressionar o botão de exclusão ao lado de uma barra
                     if (clean.equals(cleanC)) sel--;
 
                     if (clean.length() < 8) {
@@ -113,8 +135,7 @@ public class CreateAccountActivity extends AppCompatActivity {
             }
         });
 
-
-        // Formatação do telefone ((XX) X.XXXX-XXXX)
+        // Listener para a formatação do telefone ((XX) X.XXXX-XXXX)
         phoneEditText.addTextChangedListener(new TextWatcher() {
             private String current = "";
             private String phoneNumberFormat = "(XX) X.XXXX-XXXX";
@@ -165,7 +186,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         // Configurar o teclado numérico para o campo de data
         birthDateEditText.setInputType(InputType.TYPE_CLASS_DATETIME | InputType.TYPE_DATETIME_VARIATION_DATE);
 
-
+        // Configurar o clique do botão "Salvar"
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -174,6 +195,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         });
     }
 
+    // Método para salvar a conta
     private void saveAccount() {
         // Obtenha os valores inseridos pelo usuário
         String fullName = fullNameEditText.getText().toString();
@@ -182,6 +204,8 @@ public class CreateAccountActivity extends AppCompatActivity {
         String email = emailEditText.getText().toString();
         String password = passwordEditText.getText().toString();
         String confirmPassword = confirmPasswordEditText.getText().toString();
+
+        // Validação dos campos e salvamento no banco de dados...
 
         // Exemplo: Verificar se os campos estão preenchidos corretamente
         boolean isValid = true;
@@ -222,7 +246,7 @@ public class CreateAccountActivity extends AppCompatActivity {
             passwordEditText.setError("Campo obrigatório");
             isValid = false;
         } else if (!isStrongPassword(password)) {
-            passwordEditText.setError("Senha fraca utilize caracteres e numeros");
+            passwordEditText.setError("Senha fraca utilize caracteres e números");
             isValid = false;
         }
 
@@ -241,7 +265,7 @@ public class CreateAccountActivity extends AppCompatActivity {
             return;
         }
 
-        /// Salvar os dados no banco de dados
+        // Salvar os dados no banco de dados
         long rowId = databaseHelper.insertAccount(fullName, birthDate, phone, email, password);
 
         if (rowId > 0) {
@@ -265,17 +289,18 @@ public class CreateAccountActivity extends AppCompatActivity {
         finish();
     }
 
-
+    // Método para validar um endereço de e-mail
     private boolean isValidEmail(CharSequence email) {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
+    // Método para validar um número de telefone
     private boolean isValidPhone(String phoneNumber) {
         String phonePattern = "\\(\\d{2}\\) \\d{5}-\\d{4}";
         return phoneNumber.matches(phonePattern);
     }
 
-    //Verifica se a data é valida
+    // Método para validar uma data
     private boolean isValidDate(String date) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         sdf.setLenient(false);
@@ -290,6 +315,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         }
     }
 
+    // Método para validar um nome completo
     private boolean isValidFullName(String fullName) {
         if (fullName.isEmpty()) {
             return false;
@@ -309,27 +335,9 @@ public class CreateAccountActivity extends AppCompatActivity {
         return true;
     }
 
+    // Método para validar a força de uma senha
     private boolean isStrongPassword(String password) {
-        // Verificar o comprimento da senha
-        if (password.length() < 8) {
-            return false;
-        }
-
-        // Verificar se a senha contém letras maiúsculas, minúsculas e números
-        boolean hasUpperCase = false;
-        boolean hasLowerCase = false;
-        boolean hasDigit = false;
-
-        for (char c : password.toCharArray()) {
-            if (Character.isUpperCase(c)) {
-                hasUpperCase = true;
-            } else if (Character.isLowerCase(c)) {
-                hasLowerCase = true;
-            } else if (Character.isDigit(c)) {
-                hasDigit = true;
-            }
-        }
-
-        return hasUpperCase && hasLowerCase && hasDigit;
+        // Exemplo: Verificar se a senha possui pelo menos 8 caracteres e contém letras maiúsculas, minúsculas e números
+        return password.length() >= 8 && password.matches(".*[A-Z].*") && password.matches(".*[a-z].*") && password.matches(".*\\d.*");
     }
 }
