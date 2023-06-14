@@ -7,5 +7,6 @@
     <color name="colorButtonOperationNormal">#2196F3</color>
     <color name="colorButtonOperationPressed">#0D47A1</color>
     <color name="colorTextPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#3665F4</color>
 </resources>
 
