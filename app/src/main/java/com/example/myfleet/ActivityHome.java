@@ -3,13 +3,13 @@
  Nome do arquivo: ActivityHome.java
 
  Descrição: O código desenvolve a tela inicial do aplicativo MyFleet para Android, com recursos
-            de autocompletar locais, exibição de mapas e cálculo de rotas. Ele verifica se o usuário
-            está logado e redireciona para a tela de login, se necessário. O código utiliza a
-            biblioteca Places da Google para previsões de autocompletar. Ao calcular a rota, ele
-            obtém as coordenadas dos pontos de partida e chegada e as exibe no mapa, adicionando marcadores.
-            Também oferece interações ao pressionar botões de carros e iniciar a simulação, exibindo
-            mensagens ao usuário. Implementa uma confirmação dupla ao pressionar o botão "Voltar" para
-            sair do aplicativo.
+ de autocompletar locais, exibição de mapas e cálculo de rotas. Ele verifica se o usuário
+ está logado e redireciona para a tela de login, se necessário. O código utiliza a
+ biblioteca Places da Google para previsões de autocompletar. Ao calcular a rota, ele
+ obtém as coordenadas dos pontos de partida e chegada e as exibe no mapa, adicionando marcadores.
+ Também oferece interações ao pressionar botões de carros e iniciar a simulação, exibindo
+ mensagens ao usuário. Implementa uma confirmação dupla ao pressionar o botão "Voltar" para
+ sair do aplicativo.
 
  Autor: Leonardo Monteiro sa Sé Pinto
 
@@ -61,6 +61,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.textfield.TextInputEditText;
 import android.location.Address;
 import android.location.Geocoder;
+
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -384,6 +387,12 @@ public class ActivityHome extends AppCompatActivity {
 
                     // Chamar o método calculateRoute() da classe RouteCalculator para calcular a rota
                     routeCalculator.calculateRoute();
+
+                    DistanceTimeCalculator distancia = new DistanceTimeCalculator(getApplicationContext(), startLatLng, destinationLatLng);
+
+                    distancia.updateTotalDistanceAndTime();
+
+
                 }
             });
 
@@ -392,5 +401,4 @@ public class ActivityHome extends AppCompatActivity {
         }
     }
 }
-
 

@@ -20,9 +20,12 @@
 
 package com.example.myfleet;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -30,18 +33,36 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class RouteCalculator {
 
@@ -82,7 +103,7 @@ public class RouteCalculator {
             protected Boolean doInBackground(Void... params) {
                 try {
                     // Constrói a URL da requisição para o serviço de direções do Google Maps
-                    String apiKey = "YOUR_API_KEY";
+                    String apiKey = "AIzaSyCQgQeznfQnTbNtdHVNF2zvrokBc0rGLRI";
                     String url = "https://maps.googleapis.com/maps/api/directions/xml?origin=" +
                             startLatLng.latitude + "," + startLatLng.longitude +
                             "&destination=" + destinationLatLng.latitude + "," + destinationLatLng.longitude +
@@ -121,15 +142,15 @@ public class RouteCalculator {
                         if (nodeStep.getNodeType() == Node.ELEMENT_NODE) {
                             Element elementStep = (Element) nodeStep;
                             decodePolylines(elementStep.getElementsByTagName("points").item(0).getTextContent());
-                            updateTotalDistanceAndTime(elementStep.getElementsByTagName("distance").item(0).getTextContent(), elementStep.getElementsByTagName("duration").item(0).getTextContent());
+
                         }
                     }
-
                     return true;
                 } catch (Exception e) {
                     Log.e(TAG, "Error calculating route", e);
                     return false;
                 }
+
             }
 
             /**
@@ -137,7 +158,7 @@ public class RouteCalculator {
              *
              * @param encodedPoints String contendo as coordenadas codificadas.
              */
-            private void decodePolylines(String encodedPoints) {
+           private void decodePolylines(String encodedPoints) {
                 int index = 0;
                 int lat = 0, lng = 0;
 
@@ -168,19 +189,7 @@ public class RouteCalculator {
                 }
             }
 
-            /**
-             * Atualiza a distância total e o tempo total estimado da rota.
-             *
-             * @param distanceText Texto contendo a distância da etapa.
-             * @param durationText Texto contendo a duração da etapa.
-             */
-            private void updateTotalDistanceAndTime(String distanceText, String durationText) {
-                String distance = distanceText.replaceAll("\\D+", "");
-                String duration = durationText.replaceAll("\\D+", "");
 
-                totalDistance += Float.parseFloat(distance) / 1000; // Convert to kilometers
-                totalTime += Long.parseLong(duration);
-            }
 
             @Override
             protected void onPostExecute(Boolean result) {
@@ -198,15 +207,16 @@ public class RouteCalculator {
                     map.addPolyline(polylineOptions);
 
                     // Exibe as informações de distância e tempo estimado em um Toast
-                    String distanceMessage = String.format(Locale.getDefault(), "Distância total: %.2f km", totalDistance);
+                   /* String distanceMessage = String.format(Locale.getDefault(), "Distância total: %.2f km", totalDistance);
                     String timeMessage = String.format(Locale.getDefault(), "Tempo total: %d segundos", totalTime);
                     String combinedMessage = distanceMessage + "\n" + timeMessage;
 
-                    Toast.makeText(context, combinedMessage, Toast.LENGTH_SHORT).show();
-                }
+                    Toast.makeText(context, combinedMessage, Toast.LENGTH_SHORT).show();*/
+                      }
             }
         };
 
         task.execute();
     }
+
 }
